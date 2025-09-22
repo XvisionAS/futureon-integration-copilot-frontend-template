@@ -1,6 +1,6 @@
 # **Project Requirements Document: Connection Metadata Compare Integration**
 
-The integration allows users to compare connection metadata by selecting connections in the FieldTwin Design environment.
+The integration allows users to compare connection metadata by selecting connections in the FieldTwin Design environment. Use documentation to implement the integration. Metadata object definitions can be found in the [FieldTwin Design API documentation](https://api.fieldtwin.com/#api-Connections-GetConnections).
 
 ## User Requirements
 
