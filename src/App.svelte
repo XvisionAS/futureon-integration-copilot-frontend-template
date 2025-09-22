@@ -9,6 +9,7 @@
 
   let token = $state('');
   let loaded = $derived(!!token);
+  let isLoadingConnections = $state(false);
 
   let connections = $state([]);
 
@@ -20,10 +21,18 @@
   });
 
   async function triggerLoad(jwtToken, projectId, subProjectId) {
-    IntegrationService.setJWT(jwtToken)
-    IntegrationService.setProject(projectId, subProjectId)
-    connections = await IntegrationService.getConnections()
-    token = jwtToken
+    try {
+      isLoadingConnections = true;
+      IntegrationService.setJWT(jwtToken)
+      IntegrationService.setProject(projectId, subProjectId)
+      connections = await IntegrationService.getConnections()
+      token = jwtToken
+    } catch (error) {
+      console.error('Error loading connections:', error);
+      connections = {};
+    } finally {
+      isLoadingConnections = false;
+    }
   }
 
   function onWindowMessage(msg) {
@@ -43,14 +52,30 @@
     <div class="container mt-4">
       <div class="row">
         <div class="col-12">
-          <ConnectionList {connections} />
+          {#if isLoadingConnections}
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+              <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="mt-2">Loading connections...</div>
+              </div>
+            </div>
+          {:else}
+            <ConnectionList {connections} />
+          {/if}
         </div>
       </div>
     </div>
   {:else}
     <div class="container mt-4">
       <div class="alert alert-info" role="alert">
-        Waiting for integration to load...
+        <div class="d-flex align-items-center">
+          <div class="spinner-border spinner-border-sm me-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          Waiting for integration to load...
+        </div>
       </div>
     </div>
   {/if}
