@@ -26,33 +26,9 @@
     token = jwtToken
   }
 
-  function loadCSS(cssUrl, cssThemeUrl) {
-    // Helper function to create and append a stylesheet link
-    const addStylesheet = (url) => {
-      if (!url) return;
-      
-      // Check if stylesheet already exists
-      const existingLinks = document.querySelectorAll('link[rel="stylesheet"]');
-      for (const link of existingLinks) {
-        if (link.href === url) return; // Skip if already loaded
-      }
-      
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = url;
-      document.head.appendChild(link);
-    };
-    
-    // Load both stylesheets
-    addStylesheet(cssUrl);
-    addStylesheet(cssThemeUrl);
-  }
-
   function onWindowMessage(msg) {
     if (!loaded && msg.data?.event === 'loaded') {
       triggerLoad(msg.data.token, msg.data.project, msg.data.subProject)
-      // Load CSS files if provided
-      loadCSS(msg.data.cssUrl, msg.data.cssThemeUrl);
     }
     if (!msg.data.isFrameActive) {
       return
