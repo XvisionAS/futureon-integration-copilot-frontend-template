@@ -169,6 +169,85 @@ All functions, classes, and methods should be documented using JSDoc with the fo
 - CSS files can be dynamically loaded for theming integration
 - The application shows a loading state until integration data is received
 
+### FieldTwin API Authentication
+
+All FieldTwin API requests require authentication using JWT tokens:
+
+- **JWT Token Header**: Add the JWT token to the `Authorization` header as `Bearer $JWT_TOKEN`
+- **Example**: `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+- **Alternative**: Some endpoints support the legacy `token` header (but `Authorization` and `token` headers are mutually exclusive)
+- **Base URL**: `https://api.fieldtwin.com`
+- **API Documentation**: Available at https://api.fieldtwin.com/
+
+### FieldTwin Data Structure
+
+A FieldTwin SubProject contains several types of objects, each with their own endpoints:
+
+#### Core Object Types
+
+1. **StagedAssets**: Physical assets placed on the design canvas
+2. **Connections**: Pipes, cables, and other connections between assets
+3. **Shapes**: Geometric shapes and annotations
+4. **Layers**: Layer definitions for organizing objects
+5. **Wells**: Well definitions and locations
+6. **Wellbore Segments**: Detailed well path segments
+
+#### API Endpoints for SubProject Data
+
+Base pattern: `/API/v1.10/:projectId/subProject/:subProjectId/{endpoint}`
+
+- **StagedAssets**: `/API/v1.10/:projectId/subProject/:subProjectId/stagedAssets`
+- **Connections**: `/API/v1.10/:projectId/subProject/:subProjectId/connections`
+- **Shapes**: `/API/v1.10/:projectId/subProject/:subProjectId/shapes`
+- **Layers**: `/API/v1.10/:projectId/subProject/:subProjectId/layers`
+- **Wells**: `/API/v1.10/:projectId/subProject/:subProjectId/wells`
+- **Wellbore Segments**: `/API/v1.10/:projectId/subProject/:subProjectId/wellBore/:wellBoreId/wellBoreSegments/`
+
+#### MetaData Structure
+
+All object types contain a `metaData` array with the following structure:
+- `id`: Unique identifier for the metadata entry
+- `name`: Display name of the metadata field
+- `vendorId`: Vendor-specific identifier
+- `type`: Data type (e.g., "string", "numerical", "boolean")
+- `value`: The actual metadata value
+- `options`: Additional options (e.g., units for numerical values)
+
+Users commonly query objects by `name` or `vendorId` fields in the metadata.
+
+#### Definition and Type Endpoints
+
+These endpoints provide schema and type information:
+
+- **Asset Definitions**: `/API/v1.10/assets`
+- **Connection Definitions**: `/API/v1.10/connections`
+- **Connection Categories**: `/API/v1.10/connectionCategories`
+- **Connection Types**: `/API/v1.10/connectionTypes`
+- **Shape Types**: `/API/v1.9/wellBoreTypes`
+- **Layer Types**: `/API/v1.9/layerTypes`
+- **Well Types**: `/API/v1.10/wellTypes`
+- **Well Bore Types**: `/API/v1.10/wellBoreTypes`
+- **Well Bore Segment Types**: `/API/v1.10/wellBoreSegmentTypes`
+
+#### Example API Request
+
+```javascript
+// Using axios with JWT authentication
+const response = await axios.get(
+  `https://api.fieldtwin.com/API/v1.10/${projectId}/subProject/${subProjectId}/stagedAssets`,
+  {
+    headers: {
+      'Authorization': `Bearer ${jwtToken}`,
+    }
+  }
+);
+
+// Filter by metadata name
+const asset = response.data.find(item => 
+  item.metaData.some(meta => meta.name === 'Asset Name')
+);
+```
+
 ## Key Dependencies
 
 - **Svelte 5**: Modern reactive framework with runes
