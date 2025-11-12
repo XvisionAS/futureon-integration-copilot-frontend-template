@@ -206,13 +206,47 @@ Each staged asset contains:
 
 **Core Properties:**
 - `id`: Unique identifier
-- `asset`: Asset definition ID used for display
+- `asset`: Asset definition (detailed structure below)
 - `name`: Asset name
 - `description`: Asset description
 - `source`: Data source
 - `tags`: Array of tag strings
 - `operatorTags`: Array of operator tag strings
 - `supplierTags`: Array of supplier tag strings
+
+**Asset Definition Structure:**
+The `asset` property contains the template/definition this staged asset is based on:
+- `_id`: Unique asset definition ID
+- `name`: Asset definition name
+- `category`: Primary asset category
+- `subCategory`: Secondary categorization
+- `type`: Asset type identifier
+- `subType`: Asset sub-type identifier
+- `description`: Asset definition description
+- `shared`: Boolean indicating if asset is shared across accounts
+- `imageUrl`: URL to preview image for this asset
+- `model3dUrl`: URL to 3D model for this asset
+
+**Asset Parameters:**
+- `params`: Asset-specific parameters object
+  - `width`: Asset width dimension
+  - `height`: Asset height dimension
+  - `scale`: Default scale multiplier
+  - `top`: Top offset for image centering
+  - `left`: Left offset for image centering
+
+**Asset Socket Definitions:**
+- `sockets2d`: Array of available socket definitions on the asset
+  - `name`: Socket identifier
+  - `x`, `y`, `z`: Socket position relative to asset center
+  - `type`: Socket type definition
+    - `id`: Socket type ID
+    - `name`: Socket type name
+    - `category`: Socket category
+    - `color`: Socket color code
+    - `symbol`: Socket symbol representation
+    - `params`: Socket parameters (e.g., width)
+  - `types`: Array of compatible socket type IDs
 
 **Positioning & State:**
 - `initialState`: Position and rendering state
@@ -228,10 +262,11 @@ Each staged asset contains:
 
 **Sockets:**
 - `havePerAssetSockets`: Boolean indicating custom socket configuration
-- `sockets2d`: Array of socket definitions
+- `sockets2d`: Array of socket instances on this specific staged asset
   - `name`: Socket identifier
   - `x`, `y`, `z`: Socket position relative to asset center
   - `type`: Socket type definition with category, color, symbol
+  - `types`: Array of compatible socket types
 
 **Cost Information:**
 - `costObject`: Cost calculation details
@@ -253,6 +288,37 @@ Each staged asset contains:
   - `type`: Data type (string, numerical, boolean)
   - `value`: Metadata value
   - `option`: Additional options (e.g., units for numerical)
+
+**Virtual Asset Properties:**
+- `virtual`: Boolean indicating if this is a virtual asset
+- `virtualAsset`: Virtual asset information (if applicable)
+  - `id`: Virtual asset ID
+  - `name`: Virtual asset name
+  - `global`: Boolean for global availability
+  - `account`: Account identifier
+  - `clonedFroms`: Array of parent virtual asset IDs
+  - `canDragInDesign`: Boolean for design interaction
+  - `type`: Virtual asset type
+
+**Local Account Metadata:**
+- `LocalAccountType`: ID of local type for localAccountMetaData
+- `localAccountMetaData`: Array of account-specific metadata
+  - `id`: Metadata identifier (deprecated)
+  - `value`: Metadata value
+  - `option`: Additional options (e.g., units)
+  - `definitionId`: Metadata definition ID
+  - `metaDatumId`: Metadata datum ID
+  - `metaDataLinkId`: Metadata link ID
+  - `valueBis`: Asset ID for asset-type metadata
+  - `valueTer`: Socket name for asset-type metadata
+
+**Clone Information:**
+- `clonedFroms`: Array of parent object IDs (if cloned)
+
+**Foreign Asset Properties:**
+- `isForeign`: Boolean indicating if from external subProject
+- `getFrom`: URL to retrieve from external subProject
+- `getFromSubProject`: URL to external subProject source
 
 ##### Connections: `/API/v1.10/:projectId/subProject/:subProjectId/connections`
 
