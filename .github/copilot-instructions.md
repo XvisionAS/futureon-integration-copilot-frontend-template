@@ -196,12 +196,306 @@ A FieldTwin SubProject contains several types of objects, each with their own en
 
 Base pattern: `/API/v1.10/:projectId/subProject/:subProjectId/{endpoint}`
 
-- **StagedAssets**: `/API/v1.10/:projectId/subProject/:subProjectId/stagedAssets`
-- **Connections**: `/API/v1.10/:projectId/subProject/:subProjectId/connections`
-- **Shapes**: `/API/v1.10/:projectId/subProject/:subProjectId/shapes`
-- **Layers**: `/API/v1.10/:projectId/subProject/:subProjectId/layers`
-- **Wells**: `/API/v1.10/:projectId/subProject/:subProjectId/wells`
-- **Wellbore Segments**: `/API/v1.10/:projectId/subProject/:subProjectId/wellBore/:wellBoreId/wellBoreSegments/`
+##### StagedAssets: `/API/v1.10/:projectId/subProject/:subProjectId/stagedAssets`
+
+**Request Headers:**
+- `Authorization: Bearer {JWT_TOKEN}` (required)
+
+**Response Structure:**
+Each staged asset contains:
+
+**Core Properties:**
+- `id`: Unique identifier
+- `asset`: Asset definition ID used for display
+- `name`: Asset name
+- `description`: Asset description
+- `source`: Data source
+- `tags`: Array of tag strings
+- `operatorTags`: Array of operator tag strings
+- `supplierTags`: Array of supplier tag strings
+
+**Positioning & State:**
+- `initialState`: Position and rendering state
+  - `x`, `y`, `z`: Position coordinates
+  - `rotation`: Rotation in degrees around Z-axis
+  - `scale`: Scale multiplier
+  - `opacity`: Transparency (0-1)
+  - `label-offset-x`, `label-offset-y`: Label positioning
+
+**Connections:**
+- `connectionsAsFrom`: Object with connection IDs originating from this asset
+- `connectionsAsTo`: Object with connection IDs terminating at this asset
+
+**Sockets:**
+- `havePerAssetSockets`: Boolean indicating custom socket configuration
+- `sockets2d`: Array of socket definitions
+  - `name`: Socket identifier
+  - `x`, `y`, `z`: Socket position relative to asset center
+  - `type`: Socket type definition with category, color, symbol
+
+**Cost Information:**
+- `costObject`: Cost calculation details
+  - `value`: Simple cost value
+  - `costByLength`: Boolean for length-based costing
+  - `costPerLengthUnit`: Cost per unit length
+  - `entries`: Array of detailed cost entries
+
+**Well Connection:**
+- `well`: Connected well information (if applicable)
+  - `name`: Well name
+  - `x`, `y`: Well head position
+  - `path`: Array of well path points [x,y,z,depth,pitch,yaw]
+
+**MetaData:**
+- `metaData`: Array of metadata objects
+  - `id`: Metadata identifier
+  - `name`: Display name
+  - `type`: Data type (string, numerical, boolean)
+  - `value`: Metadata value
+  - `option`: Additional options (e.g., units for numerical)
+
+##### Connections: `/API/v1.10/:projectId/subProject/:subProjectId/connections`
+
+**Request Headers:**
+- `Authorization: Bearer {JWT_TOKEN}` (required)
+- `sample-every`: Optional sampling interval
+- `raw-intermediary`: Boolean for raw intermediate points
+- `simplify`: Boolean for path simplification
+
+**Response Structure:**
+Each connection contains:
+
+**Core Properties:**
+- `id`: Unique identifier
+- `description`: Connection description
+- `source`: Data source
+- `tags`: Array of tag strings
+- `operatorTags`: Array of operator tag strings
+- `supplierTags`: Array of supplier tag strings
+
+**Connection Points:**
+- `from`: Source object details
+  - Full asset information including sockets, positioning, metadata
+- `to`: Destination object details  
+  - Full asset information including sockets, positioning, metadata
+- `fromSocket`: Source socket name
+- `toSocket`: Destination socket name
+- `fromCoordinate`: Source coordinates {x, y, z}
+- `toCoordinate`: Destination coordinates {x, y, z}
+
+**Path & Geometry:**
+- `intermediaryPoints`: Array of intermediate path points
+  - `x`, `y`, `z`: Point coordinates
+  - `added`: Boolean indicating if point was auto-generated
+  - `doNotHeightSample`: Boolean for height sampling control
+- `length`: Arc length of connection
+- `sampledLength`: Sampled length (when sampling enabled)
+- `sampled`: Array of sampled points with x, y, z coordinates
+
+**Visual Properties:**
+- `params`: Rendering parameters
+  - `type`: Connection type ID
+  - `label`: Connection name
+  - `width`: Connection radius (default 0.5m)
+  - `color`: Hex color code
+  - `showFlow`: Boolean for flow direction display
+- `renderOrder`: Rendering order
+- `showLabel`: Boolean for label visibility
+- `showLength`: Boolean for length display
+- `opacity`: Transparency (0-1)
+- `straight`: Boolean for straight vs curved rendering
+
+**Connection Type Definition:**
+- `definition`: Connection type details
+  - `name`: Type name
+  - `category`: Category information with id and name
+  - `color`: Default color
+  - `symbol`: Short identifier
+  - `params`: Type-specific parameters
+
+**Cost Information:**
+- `costObject`: Cost calculation details (same structure as staged assets)
+
+**MetaData:**
+- `metaData`: Array of metadata objects (same structure as staged assets)
+
+##### Wells: `/API/v1.10/:projectId/subProject/:subProjectId/wells`
+
+**Request Headers:**
+- `Authorization: Bearer {JWT_TOKEN}` (required)
+
+**Response Structure:**
+Each well contains:
+
+**Core Properties:**
+- `id`: Unique identifier
+- `name`: Well name
+- `description`: Well description
+- `source`: Data source
+- `tags`: Array of tag strings
+
+**Positioning:**
+- `x`: X position of well head
+- `y`: Y position of well head  
+- `z`: Z position of well head
+- `color`: Rendering color (HTML hex format)
+- `radius`: Visual representation size
+- `radiusViewDependant`: Boolean for zoom-dependent sizing
+
+**Well Type:**
+- `kind`: Well type object
+  - `id`: Well type identifier
+  - `name`: Well type name
+  - `global`: Boolean for global availability
+  - `account`: Account identifier
+
+**Well Paths:**
+- `wellBores`: Array of well bore paths
+  - `id`: Well bore identifier
+  - `name`: Well bore name
+  - `path`: Array of path points with coordinates and directional data
+    - `x`, `y`, `z`: Position coordinates
+    - `depth`: Optional depth value
+    - `incl`: Optional inclination
+    - `az`: Optional azimuth
+- `activeWellBores`: Currently active well bore (same structure as wellBores)
+
+**Additional Features:**
+- `visible`: Boolean for visibility
+- `canBeDrag`: Boolean for interactive dragging
+- `casingShoes`: Array of casing shoe positions
+  - `offset`: Position along well length (0 to well length)
+- `referenceLevel`: Reference level for the well
+
+**MetaData:**
+- `metaData`: Array of metadata objects
+  - `id`: Metadata identifier
+  - `name`: Display name
+  - `type`: Data type
+  - `value`: Metadata value with nested object structure
+  - `metadatumId`: Metadata definition ID
+  - `definitionId`: Definition identifier
+  - `cost`: Cost information
+  - `costPerLength`: Boolean for length-based costing
+
+##### Shapes: `/API/v1.10/:projectId/subProject/:subProjectId/shapes`
+
+**Common Shape Properties:**
+- `name`: Shape name
+- `description`: Shape description
+- `source`: Data source
+- `shapeType`: Geometry type (Box, Sphere, Triangle, Circle, Rectangle, Cone, Cylinder, Ring, Torus, Polygon, FlatTube, Tube)
+- `visible`: Boolean for visibility
+- `opacity`: Transparency (0-1)
+- `x`, `y`, `z`: Position coordinates
+- `scale`: Scale multiplier (0.1-100)
+- `rotation`: Object with x, y, z rotation in degrees
+
+**Visual Properties:**
+- `color`: HTML/CSS3 color format
+- `outlineColor`: Outline color
+- `outlineOpacity`: Outline transparency (0-1)
+- `outlineRender`: Boolean for outline rendering
+- `shadingEnabled`: Boolean for shading
+- `textureEnabled`: Boolean for texture
+
+**Label Properties:**
+- `labelVisible`: Boolean for label visibility
+- `labelX`, `labelY`: Label offset coordinates
+- `labelZAlign`: Boolean for top alignment
+- `labelSize`: Label font size
+- `labelColor`: Label color
+
+**Positioning Behavior:**
+- `stickToBathy`: Boolean for bathymetry attachment
+- `doNotCrossBathy`: Boolean to prevent going below bathymetry
+- `assetAlignment`: Alignment method ("Center")
+
+**Connection Snapping (FlatTube/Tube only):**
+- `connection`: Connection ID to snap to
+- `connectionOffset`: Offset along connection
+- `connectionLength`: Length along connection
+- `connectionRadius`: Radius when snapped
+- `connectionRelativeToEnd`: Boolean for end-relative positioning
+- `connectionCoversEntire`: Boolean for full connection coverage
+
+**Shape-Specific Dimensions:**
+- **Sphere:** `sphereRadius`
+- **Box:** `boxWidth`, `boxHeight`, `boxDepth`
+- **Circle:** `circleRadius`
+- **Rectangle:** `rectangleWidth`, `rectangleHeight`
+- **Cone:** `coneRadius`, `coneHeight`
+- **Cylinder:** `cylinderRadiusTop`, `cylinderRadiusBottom`, `cylinderHeight`
+- **Ring:** `ringInnerRadius`, `ringOuterRadius`
+- **Torus:** `torusRadius`, `torusThickness`
+- **Triangle:** `triangleWidth`, `triangleHeight`
+
+**Advanced Features:**
+- `useAsLight`: Boolean for light source functionality
+- `lightIntensity`: Light intensity (0.01-1)
+- `useAsDepthMask`: Boolean for depth masking
+- `invertClippingMask`: Boolean for inverted clipping
+
+##### Layers: `/API/v1.10/:projectId/subProject/:subProjectId/layers`
+
+**Core Properties:**
+- `name`: Layer name
+- `description`: Layer description
+- `source`: Data source
+- `kind`: Layer type identifier
+- `url`: Resource location (bucket-name/path-to-file format)
+
+**Positioning & Transform:**
+- `x`, `y`, `z`: Position offsets
+- `rotation`: Rotation in degrees
+- `scale`: Scale multiplier
+- `visible`: Boolean for visibility
+- `opacity`: Transparency (0-1)
+
+**Height Sampling:**
+- `heightSample`: Boolean for height sampling on other layers
+- `heightSamplerLayerId`: Reference layer ID for height sampling
+
+**Gradient Rendering:**
+- `isGradient`: Boolean for gradient bitmap generation
+- `gradientPalette`: Array of gradient color stops
+  - `a`: Value for color step
+  - `c`: HTML color format (#RRGGBBAA)
+
+**Seabed Texturing:**
+- `seaBedTextureName`: Predefined texture name (rocksDiffuse, sandsDiffuse, etc.)
+- `useSeabedColor`: Boolean for custom color instead of texture
+- `seabedColor`: HTML color when using custom color
+
+**MetaData:**
+- `metaData`: Array of metadata objects (structure varies by layer type)
+
+##### Wellbore Segments: `/API/v1.10/:projectId/subProject/:subProjectId/wellBore/:wellBoreId/wellBoreSegments/`
+
+**Core Properties:**
+- `name`: Segment name
+- `description`: Segment description
+- `source`: Data source
+- `kind`: Wellbore segment type ID
+- `tags`: Array of tag strings
+
+**Positioning:**
+- `startOffset`: Start position along wellbore
+- `length`: Segment length
+- `relativeToEnd`: Boolean for end-relative positioning
+- `visible`: Boolean for visibility
+
+**Visual Properties:**
+- `thickness`: Segment thickness
+- `opacity`: Transparency
+- `labelColor`: Label color
+- `labelVisible`: Boolean for label visibility
+- `labelSize`: Label font size
+- `labelOffsetX`, `labelOffsetY`: Label positioning
+
+**MetaData:**
+- `metaData`: Array of metadata objects (same structure as other objects)
+
 
 #### MetaData Structure
 
